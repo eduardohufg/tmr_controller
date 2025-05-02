@@ -18,9 +18,9 @@ class MainController(Node):
         # Subscriptions
         self.sub_points = self.create_subscription(Point, "/next_point", self.callback_points, 10)
         self.sub_odom = self.create_subscription(Odometry, "/odom", self.callback_odom, 10)
-        self.sub_initvision = self.create_subscription(Bool, "/initvision", self.callback_vision, 10)
-        self.sub_path_init = self.create_subscription(Bool, "/path_init", self.callback_path, 10)
-        self.sub_offset = self.create_subscription(Point, "/offset", self.callback_offset, 10)
+        self.sub_initvision = self.create_subscription(Bool, "/initVision", self.callback_vision, 10)
+        self.sub_path_init = self.create_subscription(Bool, "/Path_init", self.callback_path, 10)
+        self.sub_offset = self.create_subscription(Point, "/object_offset", self.callback_offset, 10)
         self.pub_initArm = self.create_subscription(Bool, "/initArm", self.callback_arm, 10) 
 
         self.create_timer(0.01, self.control_loop)

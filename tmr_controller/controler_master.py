@@ -13,8 +13,8 @@ class ControllerMaster(Node):
         self.pub_save_map = self.create_publisher(Bool, "SaveMap", 1)  #guarda punto en el mapa
         #subs
         self.sub_doneArm = self.create_subscription(Bool, "/doneArm", self.callback_doneArm, 10)#recibe si ya termino la rutina de recojer rocas con el brazo
-        self.sub_visCenter = self.create_subscription(Bool, "/visCenter", self.callback_visCenter, 10)#recibe si ya el robot esta centrado
-        self.sub_visDetect=self.create_subscription(Bool, "/visDetect", self.callback_visDetect, 10)#recibe si ya el robot detecto la roca
+        self.sub_visCenter = self.create_subscription(Bool, "/object_centered", self.callback_visCenter, 10)#recibe si ya el robot esta centrado
+        self.sub_visDetect=self.create_subscription(Bool, "/object_detected", self.callback_visDetect, 10)#recibe si ya el robot detecto la roca
 
         self.create_timer(0.01, self.master_loop)
 
