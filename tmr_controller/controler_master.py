@@ -7,25 +7,25 @@ class ControllerMaster(Node):
         super().__init__("controller_master")
         self.get_logger().info("Controller Master Node Started")
         #pubs
-        self.pub_initVision = self.create_publisher(Bool, "/initVision", 1)#inicia la rutina de center mediante vision
-        self.pub_initArm = self.create_publisher(Bool, "/initArm", 1)#inicia la rutina de recojer rocas con el brazo
-        self.pub_path_init = self.create_publisher(Bool, "/Path_init", 1)#inicia la rutina de path
-        self.pub_save_map = self.create_publisher(Bool, "SaveMap", 1)  #guarda punto en el mapa
+        self.pub_initVision = self.create_publisher(Bool, "/init_center", 1)#inicia la rutina de center mediante vision
+        self.pub_initArm = self.create_publisher(Bool, "/init_arm", 1)#inicia la rutina de recojer rocas con el brazo
+        self.pub_path_init = self.create_publisher(Bool, "/init_path", 1)#inicia la rutina de path
+        self.pub_save_map = self.create_publisher(Bool, "save_map", 1)  #guarda punto en el mapa
         #subs
         self.sub_doneArm = self.create_subscription(Bool, "/doneArm", self.callback_doneArm, 10)#recibe si ya termino la rutina de recojer rocas con el brazo
-        self.sub_visCenter = self.create_subscription(Bool, "/visCenter", self.callback_visCenter, 10)#recibe si ya el robot esta centrado
-        self.sub_visDetect=self.create_subscription(Bool, "/visDetect", self.callback_visDetect, 10)#recibe si ya el robot detecto la roca
+        self.sub_visCenter = self.create_subscription(Bool, "/object_centered", self.callback_visCenter, 10)#recibe si ya el robot esta centrado
+        self.sub_visDetect=self.create_subscription(Bool, "/object_detected", self.callback_visDetect, 10)#recibe si ya el robot detecto la roca
 
-        self.create_timer(0.01, self.master_loop)
+        self.create_timer(0.1, self.master_loop)
 
-        self.done_arm=Bool()
-        self.vis_center=Bool()
-        self.vis_detect=Bool()
+        self.done_arm= False
+        self.vis_center= False
+        self.vis_detect= False
 
-        self.collect=Bool()
-        self.doPath=Bool()
-        self.doArm =Bool()
-        self.saveMap=Bool()
+        self.collect_msg=Bool()
+        self.do_path_msg=Bool()
+        self.do_arm_msg =Bool()
+        self.save_map_msg=Bool()
 
     def callback_doneArm(self,msg):
         self.done_arm=msg.data
@@ -44,33 +44,25 @@ class ControllerMaster(Node):
             self.get_logger().info("Center Rock")
 
     def master_loop(self):
-
-        if self.vis_detect==True and self.vis_center==False:
-            self.get_logger().info("Center Rock")
-            self.collect.data=True
-            self.doPath.data=False
-            self.doArm.data=False
-            self.saveMap.data=False
-
-        elif self.vis_center==True and self.vis_detect==True and self.done_arm==False:
-            self.get_logger().info("Init Arm")
-            self.collect.data=False
-            self.doPath.data=False
-            self.doArm.data=True
-            self.saveMap.data=True
-            
+        if self.vis_detect and not self.vis_center:
+            state = "CENTER"
+        elif self.vis_center and self.vis_detect and not self.done_arm:
+            state = "ARM"
         else:
-            self.get_logger().info("Init Path")
-            self.collect.data=False
-            self.doPath.data=True
-            self.doArm.data=False
-            self.saveMap.data=False
+            state = "PATH"
 
-        # Publish messages
-        self.pub_initVision.publish(self.collect)
-        self.pub_path_init.publish(self.doPath)
-        self.pub_initArm.publish(self.doArm)
-        self.pub_save_map.publish(self.saveMap) 
+        # Mapear estado → salidas
+        self.collect_msg.data  = (state == "CENTER")
+        self.do_arm_msg.data   = (state == "ARM")
+        self.do_path_msg.data  = (state == "PATH")
+        self.save_map_msg.data = (state == "ARM")
+
+        # Publicar
+        self.pub_initVision.publish(self.collect_msg)
+        self.pub_initArm.publish(self.do_arm_msg)
+        self.pub_path_init.publish(self.do_path_msg)
+        self.pub_save_map.publish(self.save_map_msg)
+
 
 def main(args=None):
     rclpy.init(args=args)

@@ -21,7 +21,7 @@ class ColorObjectTracker(Node):
 
         # Params
         self.threshold_centering = 20   # píxeles
-        self.min_area            = 500  # píxeles²
+        self.min_area            = 10000  # píxeles²
 
         # Camera
         self.cap = cv2.VideoCapture(0)

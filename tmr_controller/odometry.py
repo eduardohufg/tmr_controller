@@ -1,9 +1,28 @@
 #!/usr/bin/env python3
-import rclpy, math, time, tf_transformations
+import rclpy, math, time
 from rclpy.node import Node
-from std_msgs.msg import Float32
+from std_msgs.msg import Float64
+from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
+from sensor_msgs.msg import Imu
 from rclpy import qos
+
+
+def euler_from_quaternion(x, y, z, w):
+    """Converts quaternion to Euler angles (roll, pitch, yaw)."""
+    t0 = +2.0 * (w * x + y * z)
+    t1 = +1.0 - 2.0 * (x * x + y * y)
+    roll_x = math.atan2(t0, t1)
+
+    t2 = +2.0 * (w * y - z * x)
+    t2 = max(min(t2, 1.0), -1.0)  # Clamping
+    pitch_y = math.asin(t2)
+
+    t3 = +2.0 * (w * z + x * y)
+    t4 = +1.0 - 2.0 * (y * y + z * z)
+    yaw_z = math.atan2(t3, t4)
+
+    return roll_x, pitch_y, yaw_z  # in radians
 
 class OdometryClass(Node):
     def __init__(self):
@@ -11,45 +30,46 @@ class OdometryClass(Node):
         self.get_logger().info("Robot pose estimation by odometry node.")
         self.create_timer(0.01, self.odometry_callback)
         self.pub = self.create_publisher(Odometry, 'odom', 1)
-        self.create_subscription(Float32, 'VelocityEncR', self.wR_cb, qos.qos_profile_sensor_data)
-        self.create_subscription(Float32, 'VelocityEncL', self.wL_cb, qos.qos_profile_sensor_data)
+        self.pub_an = self.create_publisher(Float64, 'angle', 1)
+        self.create_subscription(Twist, "/cmd_vel", self.call_vel, 10)
+        self.create_subscription(Imu, "/bno055/imu", self.callback, 10)
         
         # Initialize variables
-        self.wR = 0.0 
-        self.wL = 0.0 
+        self.vel_linear = 0.0
         self.x = 0.0 
         self.y = 0.0 
         self.q = 0.0 
         self.t0 = time.time() 
         self.r = 0.0505  
         self.L = 0.1725 
+        self.angle = 0.0
+
+        self.pub_angle = Float64()
         
         # Initialize the odometry message
         self.odom_msg = Odometry()
 
-    def wR_cb(self, msg):
-        self.wR = msg.data
-    
-    def wL_cb(self, msg):
-        self.wL = msg.data
+    def call_vel(self, data):
+        self.vel_linear = data.linear.x
+
+
+    def callback(self, data):
+
+        # Convert quaternion to yaw
+        quat = data.orientation
+        _, _, angle_z = euler_from_quaternion(quat.x, quat.y, quat.z, quat.w)
+        self.angle = angle_z
+        self.q = angle_z
+
 
     def odometry_callback(self):
         elapsed_time = time.time() - self.t0 
         self.t0 = time.time()  
-        v = (self.wR + self.wL)*self.r / 2.0
-        w = (self.wR - self.wL)*self.r / self.L
+        v = self.vel_linear
 
-
-        if abs(w) > 1e-6:
-            dx = (v / w) * (math.sin(self.q + w * elapsed_time) - math.sin(self.q))
-            dy = (v / w) * (-math.cos(self.q + w * elapsed_time) + math.cos(self.q))
-        else:
-            dx = v * math.cos(self.q) * elapsed_time
-            dy = v * math.sin(self.q) * elapsed_time
-
-        self.x += dx
-        self.y += dy
-        self.q += w * elapsed_time
+        
+        self.x += v * math.cos(self.q) * elapsed_time
+        self.y += v * math.sin(self.q) * elapsed_time
 
         # Create odometry message
         self.odom_msg.header.stamp = self.get_clock().now().to_msg()
@@ -58,13 +78,9 @@ class OdometryClass(Node):
         self.odom_msg.pose.pose.position.x = self.x
         self.odom_msg.pose.pose.position.y = self.y
         self.odom_msg.pose.pose.position.z = 0.0
-        q = tf_transformations.quaternion_from_euler(0.0, 0.0, self.q)
-        self.odom_msg.pose.pose.orientation.x = q[0]
-        self.odom_msg.pose.pose.orientation.y = q[1]
-        self.odom_msg.pose.pose.orientation.z = q[2]
-        self.odom_msg.pose.pose.orientation.w = q[3]
         self.pub.publish(self.odom_msg)
-
+        self.pub_angle.data = self.angle
+        self.pub_an.publish(self.pub_angle)
 
 def main(args=None):
     rclpy.init(args=args)
