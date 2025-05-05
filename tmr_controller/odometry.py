@@ -2,7 +2,7 @@
 import rclpy, math, time
 from rclpy.node import Node
 from std_msgs.msg import Float64
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, Vector3
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
 from rclpy import qos
@@ -31,6 +31,7 @@ class OdometryClass(Node):
         self.create_timer(0.01, self.odometry_callback)
         self.pub = self.create_publisher(Odometry, 'odom', 1)
         self.pub_an = self.create_publisher(Float64, 'angle', 1)
+        self.euler_publisher = self.create_publisher(Vector3, '/imu/euler_angles', 10)
         self.create_subscription(Twist, "/cmd_vel", self.call_vel, 10)
         self.create_subscription(Imu, "/bno055/imu", self.callback, 10)
         
@@ -57,9 +58,15 @@ class OdometryClass(Node):
 
         # Convert quaternion to yaw
         quat = data.orientation
-        _, _, angle_z = euler_from_quaternion(quat.x, quat.y, quat.z, quat.w)
+        roll, pitch, angle_z = euler_from_quaternion(quat.x, quat.y, quat.z, quat.w)
         self.angle = angle_z
         self.q = angle_z
+
+        euler_msg = Vector3()
+        euler_msg.x = roll
+        euler_msg.y = pitch
+        euler_msg.z = angle_z
+        self.euler_publisher(euler_msg)
 
 
     def odometry_callback(self):
