@@ -29,6 +29,7 @@ setup(
             'controller = tmr_controller.controler_master:main',
             'mapping_points = tmr_controller.mapping_points:main',
             'move = tmr_controller.move:main',
+            'arm_routine = tmr_controller.arm_routine:main',
         ],
     },
 )

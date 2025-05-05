@@ -54,7 +54,7 @@ class MainController(Node):
         self.init_path_state = False
 
         self.kv = 0.2
-        self.kw = 1.0
+        self.kw = 0.5
 
         self.off_x, self.off_y = 0.0, 0.0
 
@@ -140,7 +140,7 @@ class MainController(Node):
             self.state = event
 
         if self.state is TrafficFSM.FOLLOW_PATH:
-            self.advance(kv=0.2, kw=1.0)
+            self.advance(kv=0.3, kw=1.0)
 
         elif self.state is TrafficFSM.CENTER_ROUTINE:
             self.go_to_center()
@@ -177,16 +177,16 @@ class MainController(Node):
 
     def go_to_center(self):
         msg = Twist()
-        max_ang_speed = 1.5
-        max_lin_speed = 0.5
+        max_ang_speed = 0.3
+        max_lin_speed = 0.2
 
         self.get_logger().info(f"centering: {self.off_x}, {self.off_y}")
         
-        if abs(self.off_x) > 20:
+        if abs(self.off_x) > 40:
             msg.linear.x = 0.0
             msg.angular.z = max(-max_ang_speed, min(max_ang_speed, self.kw * self.off_x))
 
-        elif abs(self.off_y) > 20:
+        elif abs(self.off_y) > 40:
             
             msg.linear.x = max(-max_lin_speed, min(max_lin_speed, self.kv * self.off_y))
             msg.angular.z = 0.0
@@ -221,7 +221,7 @@ class MainController(Node):
         self.get_logger().info(f"Distance to target: {distance}")
 
         if distance > 0.1:
-            if abs(angle_error) > 0.1:  # Fase de rotación
+            if abs(angle_error) > 0.2:  # Fase de rotación
                 msg.linear.x = 0.0
                 msg.angular.z = kw * angle_error
             else:  # Fase de avance
