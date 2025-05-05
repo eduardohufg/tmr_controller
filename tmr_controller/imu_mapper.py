@@ -5,7 +5,7 @@ from nav_msgs.msg import Odometry
 import pygame
 import math
 import numpy as np
-from pygame.locals import *
+from pygame.locals import * 
 
 class IMUMapper(Node):
     def __init__(self):
