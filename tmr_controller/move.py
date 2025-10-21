@@ -4,7 +4,6 @@ from geometry_msgs.msg import Twist, Point
 from std_msgs.msg import Bool, Float64
 from turtlesim.msg import Pose
 from nav_msgs.msg import Odometry
-import tf_transformations
 import sys
 from typing import Optional
 from enum import Enum, auto
@@ -184,11 +183,11 @@ class MainController(Node):
         
         if abs(self.off_x) > 40:
             msg.linear.x = 0.0
-            msg.angular.z = max(-max_ang_speed, min(max_ang_speed, self.kw * self.off_x))
+            msg.angular.z = -max(-max_ang_speed, min(max_ang_speed, self.kw * self.off_x))
 
         elif abs(self.off_y) > 40:
             
-            msg.linear.x = max(-max_lin_speed, min(max_lin_speed, self.kv * self.off_y))
+            msg.linear.x = -max(-max_lin_speed, min(max_lin_speed, self.kv * self.off_y))
             msg.angular.z = 0.0
         else:
             msg.linear.x = 0.0
@@ -219,11 +218,14 @@ class MainController(Node):
         angle_error = math.atan2(math.sin(angle_error), math.cos(angle_error))
 
         self.get_logger().info(f"Distance to target: {distance}")
+        max_ang_speed = 0.3
 
         if distance > 0.1:
             if abs(angle_error) > 0.2:  # Fase de rotación
                 msg.linear.x = 0.0
-                msg.angular.z = kw * angle_error
+                #msg.angular.z = kw * angle_error
+
+                msg.angular.z = max(-max_ang_speed, min(max_ang_speed, kw * angle_error))
             else:  # Fase de avance
                 msg.linear.x = kv
                 msg.angular.z = kw * angle_error

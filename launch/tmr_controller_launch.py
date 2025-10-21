@@ -36,9 +36,23 @@ def generate_launch_description():
                         executable='arm_routine',
                         name="arm_routine",
                         )
+
+    node8 = Node(package='tmr_controller',
+                        executable= 'ik_3dof',
+                        name="ik_3dof",
+                        )
+
+    node9 = Node(package='tmr_controller',
+                        executable= 'imu_mapper',
+                        name="imu_mapper",
+                        )
+    node10 = Node(package='servos_2',
+                         executable='servos_arm',
+                         name='servor_arm'
+                         )
     
     
     
-    l_d = LaunchDescription([node1, node2, node3, node4, node5, node6, node7])
+    l_d = LaunchDescription([node1, node2, node3, node4, node5, node7,node8, node10])
 
     return l_d

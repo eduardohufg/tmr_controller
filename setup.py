@@ -30,6 +30,9 @@ setup(
             'mapping_points = tmr_controller.mapping_points:main',
             'move = tmr_controller.move:main',
             'arm_routine = tmr_controller.arm_routine:main',
+            'ik_3dof = tmr_controller.ik_3dof:main',
+            'imu_mapper = tmr_controller.imu_mapper:main',
+        
         ],
     },
 )

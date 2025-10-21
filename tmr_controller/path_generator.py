@@ -18,13 +18,17 @@ class PathGeneratorNode(Node):
         
         
         self.point_list = [
-        [0.0, 0.0], [10.0, 0.0],
-        [10.0, 2.0],[0.0, 2.0],
-        [0.0, 4.0], [10.0, 4.0],
-        [10.0, 6.0], [0.0, 6.0],
-        [0.0, 8.0], [10.0, 8.0],
-        [10.0, 10.0], [0.0, 10.0]
-                            ]
+        [0.0, 0.0], [8.5, 0.0],
+        [8.5, 1.5],[0.0, 1.5],
+        [0.0, 3.0], [8.5, 3.0],
+        [8.5, 4.5],[0.0, 4.5],
+        [0.0, 6.0], [8.5, 6.0],
+        [8.5, 7.5],[0.0, 7.5],
+        [0.0, 8.2],
+        [0.0, 1.0]]
+
+        self.arrived_prev = False
+                           
         self.msg = Point() 
         self.msg_finished = Bool()
         self.arrived = False
@@ -32,12 +36,13 @@ class PathGeneratorNode(Node):
         
     
     def callback_arrived(self, msg):
-        if msg.data:
+        # Solo actúa en el momento en que cambia de False → True
+        if msg.data and not self.arrived_prev:
             self.get_logger().info("Arrived at the point")
-            self.arrived = True
-            self.point_list.pop(0)
-        else:
-            self.arrived = False
+            if self.point_list:        # seguridad extra
+                self.point_list.pop(0)
+        # memoriza el estado para el siguiente mensaje
+        self.arrived_prev = msg.data
 
     def generate_path(self):
         if (len(self.point_list) > 0):

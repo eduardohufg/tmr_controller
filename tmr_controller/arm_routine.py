@@ -41,18 +41,18 @@ class ArmRoutine(Node):
         if self.init_arm:
             self.pub_doneArm.publish(Bool(data=False))
             self.get_logger().info("Arm Routine Started")
-            self.arm_pos.x = 0.35
+            self.arm_pos.x = 0.382 #0.45
             self.arm_pos.y = 0.0
-            self.arm_pos.z = -0.45
+            self.arm_pos.z = -0.41  #-0.45
             
             self.gripper.data = -1.0
             self.pub_armPos.publish(self.arm_pos)
             self.pub_gripper.publish(self.gripper)
 
             time.sleep(5)
-            self.arm_pos.x = 0.35
+            self.arm_pos.x = 0.382
             self.arm_pos.y = 0.0
-            self.arm_pos.z = -0.45
+            self.arm_pos.z = -0.41
             
             self.gripper.data = 1.0
             self.pub_armPos.publish(self.arm_pos)
@@ -60,12 +60,12 @@ class ArmRoutine(Node):
 
 
 
-            time.sleep(5)
+            time.sleep(6)
 
             self.arm_pos.x = 0.32
             self.arm_pos.y = 0.0
             self.arm_pos.z = -0.1
-            self.gripper.data = 0.0
+            self.gripper.data = 1.0
             self.pub_armPos.publish(self.arm_pos)
             self.pub_gripper.publish(self.gripper)
 
@@ -85,9 +85,9 @@ class ArmRoutine(Node):
             time.sleep(4)
             
 
-            self.arm_pos.x = 0.1
-            self.arm_pos.y = -0.15
-            self.arm_pos.z = 0.2
+            self.arm_pos.x = 0.05
+            self.arm_pos.y = -0.12
+            self.arm_pos.z = 0.3 #2
             self.gripper.data = 0.0
             self.pub_armPos.publish(self.arm_pos)
             self.pub_gripper.publish(self.gripper)
@@ -97,9 +97,9 @@ class ArmRoutine(Node):
 
             time.sleep(10)
 
-            self.arm_pos.x = 0.1
-            self.arm_pos.y = -0.15
-            self.arm_pos.z = 0.2
+            self.arm_pos.x = 0.05
+            self.arm_pos.y = -0.12
+            self.arm_pos.z = 0.3 #2
             self.gripper.data = -1.0
             self.pub_armPos.publish(self.arm_pos)
             self.pub_gripper.publish(self.gripper)
@@ -107,7 +107,7 @@ class ArmRoutine(Node):
 
             self.arm_pos.x = 0.1
             self.arm_pos.y = 0.0
-            self.arm_pos.z = 0.3
+            self.arm_pos.z = 0.4 #3
             self.gripper.data = 1.0
             self.pub_armPos.publish(self.arm_pos)
             self.pub_gripper.publish(self.gripper)

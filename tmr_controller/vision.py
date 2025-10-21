@@ -20,8 +20,8 @@ class ColorObjectTracker(Node):
         self.create_timer(0.01, self.process_frame)
 
         # Params
-        self.threshold_centering = 20   # píxeles
-        self.min_area            = 10000  # píxeles²
+        self.threshold_centering = 40   # píxeles
+        self.min_area            = 1000  # píxeles²
 
         # Camera
         self.cap = cv2.VideoCapture(0)
@@ -93,9 +93,9 @@ class ColorObjectTracker(Node):
         cv2.drawMarker(frame, (fcx, fcy), (0, 0, 0), cv2.MARKER_CROSS, 15, 2)
 
         # Mostrar
-        cv2.imshow('Color detector', frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            rclpy.shutdown()
+        #cv2.imshow('Color detector', frame)
+        #if cv2.waitKey(1) & 0xFF == ord('q'):
+        #    rclpy.shutdown()
 
         # -------- Publicaciones --------
         self.offset_pub.publish(Point(x=float(offset_x), y=float(offset_y), z=0.0))
